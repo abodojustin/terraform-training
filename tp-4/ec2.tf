@@ -22,10 +22,26 @@ resource "aws_instance" "myec2" {
   root_block_device {
     delete_on_termination = true
   }
-  vpc_security_group_ids = ["${aws_security_group.allow_http_https.id}"]
+  vpc_security_group_ids = ["${aws_security_group.allow_ssh_http_https.id}"]
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo amazon-linux-extras install -y nginx1.12",
+      "sudo systemctl start nginx"
+    ]
+
+    connection {
+      type        = "ssh"
+      user        = "ec2-user"
+      private_key = file("./test-francis.pem")
+      host        = self.public_ip
+    }
+
+  }
+
 }
 
-resource "aws_security_group" "allow_http_https" {
+resource "aws_security_group" "allow_ssh_http_https" {
   name        = "francis-sg"
   description = "Allow http and https inbound traffic"
 
@@ -44,9 +60,29 @@ resource "aws_security_group" "allow_http_https" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  ingress {
+    description = "ssh from VPC"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
 resource "aws_eip" "lb" {
   instance = aws_instance.myec2.id
   vpc      = true
+
+  provisioner "local-exec" {
+    command = "echo PUBLIC IP: ${aws_eip.lb.public_ip} ; ID: ${aws_instance.myec2.id} ; AZ: ${aws_instance.myec2.availability_zone}; >> infos_ec2.txt"
+  }
+
 }
