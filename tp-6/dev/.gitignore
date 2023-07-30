@@ -1,0 +1,4 @@
+.terraform/
+.terraform.lock.hcl
+terraform-test.pem
+infos_ec2.txt
