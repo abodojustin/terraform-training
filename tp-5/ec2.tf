@@ -4,6 +4,17 @@ provider "aws" {
   secret_key = "xYocPt9pxtr2xP1oSVLrLXQHQJUbJt+5NvB5g6xQ"
 }
 
+terraform {
+  backend "s3" {
+    bucket     = "terraform-backend-francis-devops"
+    key        = "francis-tfstate"
+    region     = "us-east-1"
+    access_key = "PUT YOUR OWN"
+    secret_key = "PUT YOUR OWN"
+  }
+
+}
+
 data "aws_ami" "app_ami" {
   most_recent = true
   owners      = ["amazon"]
