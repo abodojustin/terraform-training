@@ -22,6 +22,6 @@ module "ec2" {
     Name = "ec2-prod-francis"
   }
 
-    sg_name = "sg-prod-francis"
+    sg_name = "francis-prod-sg"
 
 }
